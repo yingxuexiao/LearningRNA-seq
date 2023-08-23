@@ -173,15 +173,66 @@ DESeq2::plotPCA(rld,ntop=500,intgroup='group')+
 #除了PCA之外，还可以进行RLE帮助找出还需要进行标准化的数据，快速对原始或者
 #标准化的数据进行诊断，查看是否需要进一步的处理
 
-library(DESeq)
+#BiocManager::install("EDASeq")
+library(EDASeq)
 par(mfrow=c(1,2))
 plotRLE(countData,outline=FALSE,ylim=c(-4,4),
         col=as.numeric(colData$group),
         main='Raw Counts')
-plotRLE(DESeq2::counts(colData$group),
+
+plotRLE(DESeq2::counts(dds,normalized=TRUE),
+        outline=FALSE,ylim=c(-4,4),
+        col=as.numeric(colData$group),
         mian='Normalized Counts')
 
 
 
+####基因集富集GO，使用gProfileR 包
+library(DESeq2)
+# install.packages("gprofiler2")
+library(gprofiler2)
+#install.packages("knitr")
+library(knitr)
+
+#获取基因差异性分析结果
+DEresults <- results(dds,contrast=c('group','CASE','CTRL'))
+
+#删除基因中的NA空值
+DE <- DEresults[!is.na(DEresults$padj),]
+
+#调整P值<0.1筛选基因
+DE <- DE[DE$padj< 0.1,]
+
+#选择lo2 fold change 大于1的基因
+DE <- DE[abs(DE$log2FoldChange)>1,]
+
+#获取目标基因的列表
+genes0fInterest <- rownames(DE)
+
+#计算GO富集
+#代码不可用，grofiler功能已经没有了 
+#goResults <- gprofiler(query=genes0fInterest,
+#                        organism='hsapiens',
+#                        src_filter='GO',
+#                        hier_filtering='moderate')
+goResults <- gost(query=c(genes0fInterest, 
+                          src_filter='GO',
+                          hier_filtering='moderate'),
+                        organism='hsapiens')
+
+goResults <- goResults[order(goResults$p.value),]
+go <- goResults[goResults$overlap.size<100,]
+geneSet1 <- unlist(strsplit(go[1,]$intersection,','))
+normalizedCounts <- DESeq2::counts(dds,normalized=TRUE)
+geneSet2 <- sample(rownames(normalizedCounts),25)
+geneSets <- list('top_GO_term'=geneSet1,
+                 'random_set'=geneSet2)
+library(gage)
+gseaResults <- gage(exprs = log2(normalizedCounts+1),
+                    ref = match(rownames(colData[colData$group == 'CTRL',]),
+                                colnames(normalizedCounts)),
+                    samp = match(rownames(colData[colData$group == 'CASE',]),
+                                 colnames(normalizedCounts)),
+                    gsets = geneSets, compare = 'as.group')
 
 
