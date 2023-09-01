@@ -211,10 +211,12 @@ genes0fInterest <- rownames(DE)
 
 #计算GO富集
 #代码不可用，grofiler功能已经没有了 
+
 #goResults <- gprofiler(query=genes0fInterest,
 #                        organism='hsapiens',
 #                        src_filter='GO',
 #                        hier_filtering='moderate')
+#更改函数（如下）仍出错：
 goResults <- gost(query=c(genes0fInterest, 
                           src_filter='GO',
                           hier_filtering='moderate'),

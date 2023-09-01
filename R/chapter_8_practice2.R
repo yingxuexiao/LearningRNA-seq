@@ -1,5 +1,11 @@
+##Accounting for additional soureces of variation
+
 ##利用DESeq2考虑协变量影响(这是知道变量是什么的情况使用)
 #使用同样的例子进行说明（例子来源为绝对路径，由于安装包compGenomRData找不到）
+
+#counts_file <-system.file('exdata/rna-seq/SRP021193.raw_counts.tsv',
+                                            package='compGenomRData')
+
 
 counts_file <- ("C://Users/Administrator/Documents/GitHub/LearningRNA-seq/extdata/SRP021193/SRP021193.raw_counts.tsv")
 colData_file <- ("C://Users/Administrator/Documents/GitHub/LearningRNA-seq/extdata/SRP021193/SRP021193.colData.tsv")
@@ -45,8 +51,12 @@ DEresults <- results(dds, contrast = c('group', 'CASE', 'CTRL'))
 
 
 
+#accounting for estimated covariates using RUVSeq
 
 ###使用RUVSeq来估计协变量的方法（这种针对不清楚潜在变量是什么的情况）
+#相对路径：#counts_file <-system.file('exdata/rna-seq/SRP049988.raw_counts.tsv',
+                                            package='compGenomRData')
+
 counts_file <- ("C://Users/Administrator/Documents/GitHub/LearningRNA-seq/extdata/SRP049988/SRP049988.raw_counts.tsv")
 
 colData_file <- ("C://Users/Administrator/Documents/GitHub/LearningRNA-seq/extdata/SRP049988/SRP049988.colData.tsv")
@@ -99,6 +109,7 @@ plotRLE(tpm, outline=FALSE, ylim=c(-4, 4), col=as.numeric(colData$group))
 plotPCA(tpm, col=as.numeric(colData$group), adj = 0.5,
         ylim = c(-0.3, 1), xlim = c(-0.5, 0.5))
 
+#removing unwanted variation fro the data
 #利用管家基因作为参考移除不想要的变量
 library(RUVSeq)
 
@@ -214,6 +225,7 @@ pheatmap(normCountData[selectedGenes,],
          cutree_cols = 2,
          scale = 'row')
 
+#re-run DESeq2 with the computed covariates
 
 #再次运行DESeq2使用已经计算后的协变量。
 #利用RUVs处理后的数据和DESeq2，可以再次进行差异表达分析
