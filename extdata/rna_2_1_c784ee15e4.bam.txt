@@ -1,0 +1,23 @@
+reads.FileName1	C:/Users/Administrator/Documents/GitHub/LearningRNA-seq/extdata/rna_2_1.fq.bz2
+reads.FileName2	C:/Users/Administrator/Documents/GitHub/LearningRNA-seq/extdata/rna_2_2.fq.bz2
+reads.md5subsum1	05d61f5d0110b5fe87b9749c09c4d176
+reads.md5subsum2	0807fb6c798f53486a4a6edbbb819ddc
+samplesFormat	fastq
+genome	C:/Users/Administrator/Documents/GitHub/LearningRNA-seq/extdata/hg19sub.fa
+genome.md5	6cf516257ac32f9f881ef384add30864
+genomeFormat	file
+aux	NA
+aux.md5	NA
+aligner	Rbowtie
+aligner.version	1.40.0
+maxHits	1
+paired	fr
+splicedAlignment	FALSE
+snpFile	NA
+snpFile.md5	NA
+bisulfite	no
+alignmentParameter	-m 1 --best --strata --maxins 500
+geneAnnotation	NA
+geneAnnotationFormat	NA
+geneAnnotation.md5	NA
+QuasR.version	1.40.1
