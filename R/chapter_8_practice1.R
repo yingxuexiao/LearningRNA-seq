@@ -210,31 +210,76 @@ DE <- DE[abs(DE$log2FoldChange)>1,]
 genes0fInterest <- rownames(DE)
 
 #计算GO富集
-#代码不可用，grofiler功能已经没有了 
+library(clusterProfiler)
+library(org.Hs.eg.db)
 
-#goResults <- gprofiler(query=genes0fInterest,
-#                        organism='hsapiens',
-#                        src_filter='GO',
-#                        hier_filtering='moderate')
-#更改函数（如下）仍出错：
-goResults <- gost(query=c(genes0fInterest, 
-                          src_filter='GO',
-                          hier_filtering='moderate'),
-                        organism='hsapiens')
+data(geneList, package = "DOSE")
 
-goResults <- goResults[order(goResults$p.value),]
-go <- goResults[goResults$overlap.size<100,]
-geneSet1 <- unlist(strsplit(go[1,]$intersection,','))
-normalizedCounts <- DESeq2::counts(dds,normalized=TRUE)
-geneSet2 <- sample(rownames(normalizedCounts),25)
-geneSets <- list('top_GO_term'=geneSet1,
-                 'random_set'=geneSet2)
-library(gage)
-gseaResults <- gage(exprs = log2(normalizedCounts+1),
-                    ref = match(rownames(colData[colData$group == 'CTRL',]),
-                                colnames(normalizedCounts)),
-                    samp = match(rownames(colData[colData$group == 'CASE',]),
-                                 colnames(normalizedCounts)),
-                    gsets = geneSets, compare = 'as.group')
+gene <- names(geneList)[abs(geneList) > 2]
+
+# Entrez gene ID
+head(gene)
+
+ego <- enrichGO(gene          = gene,
+                universe      = names(geneList),
+                OrgDb         = org.Hs.eg.db,
+                ont           = "CC",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.05,
+                readable      = TRUE)
+
+head(ego)
+
+library(enrichplot)
+
+barplot(ego, showCategory=20) 
+
+mutate(ego, qscore = -log(p.adjust, base=10)) %>% barplot(x="qscore")
+
+ekg <- enrichKEGG(gene          = gene,
+                  organism = "hsa", 
+                  keyType = "kegg")
+head(ekg)
+
+barplot(ekg, showCategory=10)
+
+updegs
+downdegs
 
 
+
+gene.df <- bitr(gene, fromType = "ENTREZID",
+                toType = c("ENSEMBL", "SYMBOL"),
+                OrgDb = org.Hs.eg.db)
+
+ego2 <- enrichGO(gene         = gene.df$ENSEMBL,
+                 OrgDb         = org.Hs.eg.db,
+                 keyType       = 'ENSEMBL',
+                 ont           = "CC",
+                 pAdjustMethod = "BH",
+                 pvalueCutoff  = 0.01,
+                 qvalueCutoff  = 0.05)
+
+head(ego2, 3)                
+
+dotplot(ego, showCategory=30) + ggtitle("dotplot for ORA")
+dotplot(ego2, showCategory=30) + ggtitle("dotplot for GSEA")
+
+
+### Gene-Concept Network
+
+## convert gene ID to Symbol
+edox <- setReadable(ego, 'org.Hs.eg.db', 'ENTREZID')
+p1 <- cnetplot(edox, foldChange=geneList)
+
+## categorySize can be scaled by 'pvalue' or 'geneNum'
+p2 <- cnetplot(edox, categorySize="pvalue", foldChange=geneList)
+p3 <- cnetplot(edox, foldChange=geneList, circular = TRUE, colorEdge = TRUE) 
+cowplot::plot_grid(p1, p2, p3, ncol=3, labels=LETTERS[1:3], rel_widths=c(.8, .8, 1.2))
+
+### Heatmap-like functional classification
+p1 <- heatplot(edox, showCategory=5)
+p2 <- heatplot(edox, foldChange=geneList, showCategory=5)
+cowplot::plot_grid(p1, p2, ncol=1, labels=LETTERS[1:2])
+print(1:10)

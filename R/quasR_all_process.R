@@ -17,7 +17,7 @@ suppressPackageStartupMessages({
   library(Gviz)
 })
 ###quasR所用的例子需要安装下面的包：
-BiocManager::install("BSgenome.Hsapiens.UCSC.hg19")
+#BiocManager::install("BSgenome.Hsapiens.UCSC.hg19")
 
 library(BSgenome.Hsapiens.UCSC.hg19)
 
