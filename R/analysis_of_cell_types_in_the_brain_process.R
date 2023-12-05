@@ -37,6 +37,7 @@ spike.data <- readFormat("GitHub/LearningRNA-seq/extdata/expression_spikes_17-Au
 
 mito.data <- readFormat("GitHub/LearningRNA-seq/extdata/expression_mito_17-Aug-2014.txt")
 
+
 ##需要对线粒体数据进行格式的处理，使具有相同data格式
 m <- match(endo.data$metadata$cell_id, mito.data$metadata$cell_id)
 
